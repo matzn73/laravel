@@ -4,12 +4,12 @@
 ```
 git clone https://github.com/shonansurvivors/laradock-like.git laradock
 ```
-`result: Unpacking objects:100% (44/44), done.`
+rslt: `Unpacking objects:100% (44/44), done.`
 
 ```
 cp env-example .env
 ```
-`env-exampleを生成した`
+rslt: `env-exampleを生成した`
 
 <br>
 
@@ -18,7 +18,7 @@ cp env-example .env
 ```
 vi .env
 ```
-`環境変数をCOMPOSE_PROJECT_NAME=laravel-sns　に変更。そのほかはデフォルト`
+rslt: `環境変数をCOMPOSE_PROJECT_NAME=laravel-sns　に変更。そのほかはデフォルト`
 
 <br>
 
@@ -26,7 +26,7 @@ vi .env
 ```
 docker-compose up -d workspace php-fpm nginx postgres
 ```
-`result: command not found: docker-compose`
+rslt: `command not found: docker-compose`
 
 
 #### docker desctop for mac をインストールしたらコマンドが実行できた。
@@ -98,3 +98,57 @@ ex) Route::get('/','ArticleController@index')
 ```
 rubyだと) get '/' => 'ArticleController#index'
 ```
+
++ このタイミングでGit Hubにプッシュした
+
+<br>
+
+## コマンドでのコントローラーの新規作成
+
+`laradock`に移動して
+```
+docker-compose exec workspace php artisan make:controller ArticleController
+```
+rslt: `コントローラーができる`
+
++ laravelの元々のコントローラー作成コマンドは`php artisan make:`
++ `docker-compose exec workspace php`で起動中のworkspaceという名前のDockerコンテナ(仮想環境)の中で、続くコマンド(php artisan...)を実行する
+
++ 型キャスト
+  >配列の手前に(object)と記述することで、配列がオブジェクト型に変換されています。
+
++ viewを返す
+  
+  ```
+  return view('articles.index', ['articles' => $articles]);
+  ```
+  > railsの場合はデフォルトでコントローラー名/メソッド名のviewファイルを開くが、laravelの場合は`return view`でviewを返さなければいけない。
+
+### viewメソッドの補足
+ + withメソッドを使った書き方
+  ```
+  return view('articles.index')->with(['articles' => $articles]);
+  ```
+ + compact関数を使う書き方
+  ```
+  return view('articles.index', compact('articles'));
+  ```
+  > conpact関数を使うと、連想配列で変数を定義しなくても大丈夫
+
++ MDBootstrapの使い方はBootstrap4とほぼ同じだが、アイコンが使える。
+
+## @extendsと@section
+
++ @extends('app')でapp.blade.phpをベースとして使う。
+
++ @section('title', '記事一覧')は、app.blade.phpの@yield('title')に対応します。
+
+## エラー：Class 'App\Http\Controllers\Controller　' not found
+
+ viewにテンプレートを置いてlocalhostにアクセスしたらこのエラーが出た。
+  
+  + 記述ミスなし
+```
+class ArticleController extends Controller //Controllerを継承している
+```
+原因: `全角スペースを含めていたため、not foundになってしまった。エラーが出た際は必ず調べる`
