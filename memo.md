@@ -297,5 +297,17 @@ $articles = Article::all()->sortByDesc('created_at');
 
 - コレクションは配列と同じように扱うことができますが、配列には無い、便利な様々なメソッドを使うことができます。[使えるメソッド一覧](https://readouble.com/laravel/6.x/ja/collections.html)
 
+認証関連のルーティング
+
+- Laravelでは認証関連のルーティングのひな形を用意してくれています。
+  
+```
+Auth::routes(); 
+```
+
+>ユーザー認証に関連するメソッドが生成される。railsのresoucesとdeviseを足して2で割った感じ？
+
+
+
 
 
