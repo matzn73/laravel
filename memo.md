@@ -231,9 +231,71 @@ docker-compose exec workspace php artisan migrate
 $ docker-compose exec workspace php artisan migrate:rollback
 ```
 
-## 記事モデルの作成
+## モデルの作成
+
 ```
 docker-compose exec workspace php artisan make:model Article
 ```
->コマンドが成功すると、laravel/appディレクトリにArticle.phpが作成されます。
+- コマンドが成功すると、laravel/appディレクトリにArticle.phpが作成されます。
+
+
+Eloquent
+- Eloquent、と出てきたらモデルのことだと思ってください。
+
+`Eloquent ORM(Eloquent Object Relational Mapping)`
+
+$this
+- $thisは、Articleクラスのインスタンス自身を指しています。
+
+- `$this->メソッド名()`とすることで、インスタンスが持つメソッドが実行され、`$this->プロパティ名`とすることで、インスタンスが持つプロパティを参照します。
+
+リレーション
+- 記事と、記事を書いたユーザーは多対1の関係ですが、そのような関係性の場合には、`belongsTo`メソッドを使います。それ以外の関係性の場合は、それぞれ以下のメソッドを使います。
+- 1対1の関係は、`hasOne`メソッド
+- 1対多の関係は、`hasMany`メソッド
+- 多対多の関係は、`belongsToMany`メソッド
+
+型宣言
+ >関数のパラメータや戻り値、 クラスのプロパティ (PHP 7.4.0 以降) に対して型を宣言することができます。 これによって、その値が特定の型であることを保証できます。 その型でない場合は、TypeError がスローされます。
+
+外部キー名の省略
+- 以下のコードではbelongsToメソッドにuser_idやidといったカラム名が一切渡されていないのに、リレーションが成り立っています。
+```
+return $this->belongsTo('App\User');
+```
+- これは、usersテーブルの主キーはid、articlesテーブルの外部キーは関連するテーブル名の単数形_id(つまりuser_id)であるという前提のもと、Laravel側で処理をしているためです。
+- 上記のようなネーミングルールになっていない場合は、belongsToメソッドに追加で引数を渡す必要があります
+
+リレーションの使い方の注意点
+```
+$article->user(); ×
+```
+
+```
+$article->user; ○
+```
+- user()がリレーションメソッドであるのに対し、()無しのuserは動的プロパティと呼ばれます。
+
+```
+$article->user;         //-- Userモデルのインスタンスが返る
+$article->user->name;   //-- Userモデルのインスタンスのnameプロパティの値が返る
+$article->user->hoge(); //-- Userモデルのインスタンスのhogeメソッドの戻り値が返る
+$article->user();       //-- BelongsToクラスのインスタンスが返る
+```
+
+## モデルから記事情報を取得する
+
+コントローラーを編集する
+```
+$articles = Article::all()->sortByDesc('created_at');
+```
+- allメソッドは、モデルが持つクラスメソッドです。 [reference](https://readouble.com/laravel/6.x/ja/eloquent.html#retrieving-models)
+
+コレクション
+
+- コレクションはPHPの配列を拡張したもので、Laravelに用意されたクラスです。
+
+- コレクションは配列と同じように扱うことができますが、配列には無い、便利な様々なメソッドを使うことができます。[使えるメソッド一覧](https://readouble.com/laravel/6.x/ja/collections.html)
+
+
 
