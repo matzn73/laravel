@@ -18,7 +18,7 @@ rslt: `env-exampleを生成した`
 ```
 vi .env
 ```
-rslt: `環境変数をCOMPOSE_PROJECT_NAME=laravel-sns　に変更。そのほかはデフォルト`
+rslt: `環境変数をCOMPOSE_PROJECT_NAME=laravel-sns に変更。そのほかはデフォルト`
 
 <br>
 
@@ -143,7 +143,7 @@ rslt: `コントローラーができる`
 
 + @section('title', '記事一覧')は、app.blade.phpの@yield('title')に対応します。
 
-## エラー：Class 'App\Http\Controllers\Controller　' not found
+## エラー：Class 'App\Http\Controllers\Controller ' not found
 
  viewにテンプレートを置いてlocalhostにアクセスしたらこのエラーが出た。
   
@@ -152,3 +152,21 @@ rslt: `コントローラーができる`
 class ArticleController extends Controller //Controllerを継承している
 ```
 原因: `全角スペースを含めていたため、not foundになってしまった。エラーが出た際は必ず調べる`
+
+  >拡張機能のzenkakuが有効になっているので本来なら全角スペースがわかるようになっているのだが、なぜか無効になっていた。再起動することで動くようになった。
+
+対策：`zenkakuを常にオンにする`
+
+ホームディレクトリ からviで以下のコマンドを開く
+```
+.vscode/extensions/mosapride.zenkaku-◯.◯.◯/extension.js
+```
+
+`var enable = false`を`true`に変更
+#### これで常にzenkakuが有効になる。
+
+## formatメソッド
+>formatメソッドは、Laravelの日付時刻クラスであるCarbonで使えるメソッドです。<br>
+引数には、日付時刻表示のフォーマット(形式)を渡します。<br>
+'Y/m/d H:i'とすれば、2020/02/01 12:00といった表示になります。<br>
+'Y年m月d日 H時i分'とすれば、2020年02月01日 12時00分といった表示になります。
