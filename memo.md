@@ -170,3 +170,70 @@ class ArticleController extends Controller //Controllerを継承している
 引数には、日付時刻表示のフォーマット(形式)を渡します。<br>
 'Y/m/d H:i'とすれば、2020/02/01 12:00といった表示になります。<br>
 'Y年m月d日 H時i分'とすれば、2020年02月01日 12時00分といった表示になります。
+
+### 全体的な流れ
+
+ルーティング設定⇨ビューの雛形をある程度作っちゃう⇨モデル⇨コントローラー
+
+## データベースの作成
+```
+docker-compose exec workspace psql -U default -h postgres
+```
+>psqlは、PostgreSQLをコマンドで操作するためのツールです。
+
+パスワードを`secret`で通過した後に
+```
+default=# create database larasns;
+```
+`\q`で抜けられる
+
+## Laravelからデータベースへ接続できるようにする
+
+`laravel`ディレクトリの`.env`の環境変数の値を変更する。
++ 変更後
+  ```
+  DB_CONNECTION=pgsql
+  DB_HOST=postgres
+  DB_PORT=5432
+  DB_DATABASE=larasns
+  DB_USERNAME=default
+  DB_PASSWORD=secret
+  ```
+
+  ## 記事テーブルの作成
+  Laravelを使ってデータベースにテーブルを作成するには、まずマイグレーションファイルを作成する必要があります。
+
+  laradockディレクトリで以下コマンドを実行してください。
+  ```
+  $ docker-compose exec workspace php artisan make:migration create_articles_table --create=articles
+  ```
+  >laravelディレクトリにmigrationファイルが生成される
+
+外部キー制約
+```
+$table->foreign('user_id')->references('id')->on('users');`
+```
+>上記は、articlesテーブルのuser_idカラムは、usersテーブルのidカラムを参照すること
+
+nullable
+>nullableメソッドを使うことで、そのカラムにnullが入ることを許容します。
+
+マイグレーションの実行
+```
+docker-compose exec workspace php artisan migrate
+```
+
+マイグレーションのロールバックについて
+>なお、もしマイグレーションファイルの内容を誤ったままマイグレーションを実行してしまった場合は、ロールバックしてください。
+
+>Laravelのマイグレーションでのロールバックは、`php artisan migrate:rollback`というコマンドで行うことができます。
+```
+$ docker-compose exec workspace php artisan migrate:rollback
+```
+
+## 記事モデルの作成
+```
+docker-compose exec workspace php artisan make:model Article
+```
+>コマンドが成功すると、laravel/appディレクトリにArticle.phpが作成されます。
+
