@@ -420,3 +420,31 @@ old関数
 この理由は、ドロップダウンメニューの`liタグ内にformタグを配置すると`、本教材で使用しているMDBootstrapの仕様でドロップダウンメニューの`レイアウトが崩れてしまう`(横幅が大きくなる)ためです。
 
 そこで、`formタグはliタグの外に配置し`、`formタグのid属性`と、`buttonタグのform属性`それぞれに`"logout-button"`という値を与え、両者を関連付けるようにしています。
+
+$errors変数
+
+- $errors変数は、Illuminate\Support\MessageBagクラスのインスタンスであり、バリデーションエラーメッセージを配列で持っています。
+```
+@if ($errors->any())
+```
+
+- エラーメッセージが1件以上ある場合は、MessageBagクラスのallメソッドで全エラーメッセージの配列を取得し、@foreachで繰り返し表示を行なっています。
+
+```
+@foreach($errors->all() as $error)
+  <li>{{ $error }}</li>
+@endforeach
+```
+
+バリデーションエラーメッセージの日本語化
+- laravel/resources/langディレクトリにjaディレクトリを作成し、そこにvalidation.phpを作成
+- [reference](https://readouble.com/laravel/6.x/ja/validation-php.html)からコピペ
+
+メールアドレスの重複に関するエラーメッセージについて
+
+- 悪意のあるユーザーが様々な他人のメールアドレスを次々と入力し、`どのメールアドレスの持ち主が本Webサービスの利用者であるかを調べることができてしまいます。`
+- メールアドレスが登録済みであることがわかるエラーメッセージを表示すると、デメリットもあるということを知識として覚えておいてください。
+
+レコードの削除
+- DBを立ち上げてSQLを投げるか、tinkerで対話形式で削除することができる。
+>tinkerはrails consoleのイメージ
