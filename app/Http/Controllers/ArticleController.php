@@ -14,5 +14,10 @@ class ArticleController extends Controller //Controllerを継承している
 
         return view('articles.index', compact('articles')); //viewを返す
                                         //ここでarticlesを連組配列で定義することでviewファイルで$articlesが使える
-    }                           
+    }     
+    
+    public function create()
+    {
+        return view('articles.create');
+    }
 }
