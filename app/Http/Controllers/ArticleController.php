@@ -47,4 +47,9 @@ class ArticleController extends Controller //Controllerを継承している
         $article->delete();
         return redirect()->route('articles.index');
     }
+
+    public function show(Article $article)
+    {
+        return view('articles.show', ['article' => $article]);
+    }
 }
