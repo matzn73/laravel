@@ -658,3 +658,104 @@ docker-compose exec workspace php artisan migrate
 
 #### 対策：まずエラーメッセージの内容を読み解くこと。（今回の場合はupdated_atカラムがundefindになっているところに着目するべきだった）<br>その上でDBテーブルのエラーだったのでマイグレーションファイルがおかしくないか見にいく。<br>または、マイグレートが正しく実行されているか確認する。
 
+fillableの利用
+
+```
+$article->fill($request->all());
+```
+
+- リクエストのallメソッドを使うことで、記事投稿画面から送信されたPOSTリクエストのパラメータを以下のように配列で取得できます。
+- そして、Articleモデルのfillメソッドにこの配列を渡すと、
+
+```
+   protected $fillable = [
+        'title',
+        'body',
+    ];
+```
+
+- Artcleモデルのfillableプロパティ内に指定しておいたプロパティ(ここではtitleとbody)のみが、$articleの各プロパティに代入されます。
+>記事投稿画面ではタイトルと本文のみを入力してPOST送信できるように作りましたが、クライアント側でツールなどを使ってそれ以外のパラメーターも含んだ不正なリクエストをPOST送信することは可能です。しかし、fillableプロパティを定義したことで、クライアントからのリクエストのパラメーター値をそのまま取り込んで更新しても良いプロパティは、titleとbodyのみと制限されるようになりました。これによって、不正なリクエストによってarticlesテーブルが予期せぬ内容に更新されることを防ぐようになりました。
+
+## 編集、削除昨日
+
+編集
+
+```
+public function edit(Article $article) Articleモデルのインスタンスが代入されている
+    {
+        return view('articles.edit', ['article' => $article]);    
+    }
+```
+
+- storeアクションメソッドの時と同様、LaravelではArticleモデルのインスタンスのDI(依存性の注入)が行われます。
+- DIが行われることで、editアクションメソッド内の$articleにはArticleモデルのインスタンスが代入された状態となっています。
+>疎結合にする
+- storeアクションメソッドの時と異なり、editアクションメソッドの場合は、$articleには、このeditアクションメソッドが呼び出された時のURIが例えばarticles/3/editであれば、idが3であるArticleモデルのインスタンスが代入されます。
+
+暗黙の結合
+
+- Laravelはタイプヒントされた変数名とルートセグメント名が一致する場合、Laravelはルートかコントローラアクション中にEloquentモデルが定義されていると、自動的に依存解決します。
+>railsのように:idと入れなくてもいい
+
+@methodの使用
+
+- LaravelのBladeでPATCHメソッド等を使う場合は、formタグではmethod属性を"POST"のままとしつつ、@methodでPATCHメソッド等を指定するようにします。
+
+```
+<form method="POST" action="{{ route('articles.update', ['article' => $article]) }}">
+  @method('PATCH')
+```
+
+認証済みユーザー情報の取得
+- 記事ごとの更新・削除メニューは、その記事を投稿したユーザーにのみ表示する必要があります。
+
+```
+@if( Auth::id() === $article->user_id )
+// 略
+@endif
+```
+- `Auth::id`でログイン中のユーザーIDが取得できる
+
+[Null合体演算子(??)](https://www.php.net/manual/ja/language.operators.comparison.php#language.operators.comparison.coalesce)
+
+```
+{{ $article->title ?? old('title') }} タイトルが存在していたら、表示する
+```
+
+- $article->title ?? old('title')となっているコードの??はNull合体演算子と呼ばれるものです。
+
+- null合体演算子は、式1 ?? 式2という形式で記述し、以下の結果となります。
+
+>- 式1がnullでない場合は、式1が結果となる
+>- 式1がnullである場合は、式2が結果となる
+- form.blade.phpは、記事投稿画面と記事更新画面で共用していますが、記事投稿画面のビューにはコントローラーから変数$articleは渡されていません。
+- その為、単純に$article->titleとだけにすると、記事更新画面の表示では問題ないのですが、記事投稿画面を表示しようとするとエラーとなってしまいます。
+
+#### $article->titleとした場合の新規投稿画面のエラー内容
+
+```
+Undefined variable: article (View: /var/www/html/resources/views/articles/form.blade.php)
+```
+
+```
+$article is undefined
+```
+
+- $ariticleがundefinedになってる！ないよー
+
+モデルのfillメソッドの戻り値はそのモデル自身
+```
+$article->user_id = $request->user()->id;
+```
+
+ルーティングの確認と編集
+
+[部分的なリソースルート](https://readouble.com/laravel/6.x/ja/controllers.html#restful-partial-resource-routes)
+
+```
+Route::resource('/articles', 'ArticleController')->except(['index', 'show'])->middleware('auth'); //-- exceptメソッドの引数を変更
+Route::resource('/articles', 'ArticleController')->only(['show']); //-- この行を追加
+```
+
+- ここでは、リソースルートにonlyメソッドとexceptメソッドを使い分けて、showアクションメソッドに対してauthミドルウェアを使わないようにしています。
