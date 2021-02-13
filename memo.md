@@ -307,7 +307,99 @@ Auth::routes();
 
 >ユーザー認証に関連するメソッドが生成される。railsのresoucesとdeviseを足して2で割った感じ？
 
+トレイト
+```
+trait RegistersUsers
+```
 
+- 上記のようにtraitと宣言されているものがトレイトです。
+- トレイトは、そのままではクラスとして使用できず、
+  
+```
+class RegisterController extends Controller
+{
+    use RegistersUsers;
+} 
+```
 
+- のように、他のクラスの中でuse トレイト名と記述します。
+- 汎用性の高い機能をトレイトとしてまとめておき、他の複数のクラスで共通して使う、といった使い方をします。
+>railsのHelperメソッドとかそんなイメージ？
 
+- PHPでは、ひとつのクラスが別のクラスを2つ以上継承することはできません。
+- 一方、トレイトはいくつでも同時に使用(use)できます。
+
+三項演算子
+- 三項演算子は、式1 ? 式2 : 式3という形式で記述し、`式1がtrueの場合は、式2が値となる``式1がfalseの場合は、式3が値となる`
+
+redirect関数とredirectPathメソッド
+- redirect関数は、引数として与えられたURLへクライアントをリダイレクトさせます。
+  
+method_exists関数
+- 第一引数にクラス、第二引数にメソッド名を受け取り、第一引数のクラスに第二引数のメソッドが存在するかどうかをtrueかfalseで返します。
+
+早期return
+- returnしているので、if文を抜けた以降にコードがあったとしても、redirectPathメソッドとしての処理はそこで終了します。
+
+```
+return property_exists($this, 'redirectTo') ? $this->redirectTo : '/home'
+```
+
+>$thisにredirectToがあるか確認して、あれば $his->redirectToを返す
+
+修正して良いコードとそうでないコード
+
+- vendorディレクトリはcomposer installコマンドによってインストールされたPHPの各種ライブラリのコードが配置される箇所ですが、通常はここにあるコードを直接修正することはしません。
+
+バリデーションの確認
+
+```
+protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+    }
+```
+
+>Laravelがvalidaterでユーザー認証のバリデーションを用意してくれている
+
+- usersテーブルの他のメールアドレスと被らないこと`unique:users`といった定義も行なっています。[Laravelで使用できるバリデーションのルール](https://readouble.com/laravel/6.x/ja/validation.html#available-validation-rules)
+
+- なお、カラム名がリクエストされたパラメータ名と異なる場合には、以下のようにテーブル名の後にカンマで区切ってカラム名を指定してください。<br>例えば以下は、リクエストされたパラメータ名はnicknameであるけれど、チェック対象のusersテーブルのカラム名がnameである場合の例です。
+
+```
+'nickname' => ['unique:users,name']
+```
+
+## 登録画面の作成
+
+route関数
+
+- Laravelのroute関数は、与えられた名前付きルートのURLを返します。[名前付きルートのリファレンス ](https://readouble.com/laravel/6.x/ja/routing.html#named-routes)
+
+```
+<form method="POST" action="{{ route('名前付きルート') }}">
+```
+
+>URLはどちらもregisterだが、送られたリクエストによって画面表示（GET）かユーザー登録（POST）か決まる
+
+@csrf
+- csrfは、Cross-Site Request Forgeries(クロスサイト・リクエスト・フォージェリ)というWebアプリケーションの脆弱性の略称で、上記のinputタグはこの脆弱性からWebサービスを守るためのトークン情報です。
+
+#### ※POSTメソッドであるリクエストにこのトークン情報が無いと、Laravelではエラーをレスポンスします。ですので、POST送信を行うBladeには@csrfを含めるようにしてください。
+>ハマりそうなポイント
+
+old関数
+- old関数は、引数にパラメータ名を渡すと、直前のリクエストのパラメータを返します。
+
+```
+<input class="form-control" type="text" id="name" name="name" required value="{{ old('name') }}">
+```
+
+- old関数を使うことで、入力した内容が保持された状態でユーザー登録画面が表示されるようになり、ユーザーはエラーになった箇所だけを修正すれば良くなります。
+
+#### ※ただし、passwordとpassword_confirmationはold関数を使ってもnullが返ります。
 
