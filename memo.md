@@ -403,3 +403,20 @@ old関数
 
 #### ※ただし、passwordとpassword_confirmationはold関数を使ってもnullが返ります。
 
+もしログアウト後のリダイレクト先を変えたい場合は
+- vendorディレクトリにあるコードは通常は修正しない
+- AuthenticatesUsersトレイトをuseしているLoginControllerにloggedoutメソッドを追加します。
+> オーバーライド
+
+@guest, @auth
+- @guestから@endguestに囲まれた部分は、ユーザーがまだログインしていない状態の時のみ処理されます。
+- 逆に@authから@endauthに囲まれた部分は、ユーザーがログイン済みの状態の時のみ処理されます。
+>railsのようにif文で条件分岐しなくてもいい！
+
+#### ※POSTを使う際は、aタグではなく、buttonタグとformタグを使用します。
+
+なお、今回`ログアウトのbuttonタグをformタグの配下`に置かないようにしています。
+
+この理由は、ドロップダウンメニューの`liタグ内にformタグを配置すると`、本教材で使用しているMDBootstrapの仕様でドロップダウンメニューの`レイアウトが崩れてしまう`(横幅が大きくなる)ためです。
+
+そこで、`formタグはliタグの外に配置し`、`formタグのid属性`と、`buttonタグのform属性`それぞれに`"logout-button"`という値を与え、両者を関連付けるようにしています。
