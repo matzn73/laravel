@@ -560,3 +560,101 @@ Route::resource('/articles', 'ArticleController')->except(['index'])->middleware
 ```
 docker-compose exec workspace php artisan make:request ArticleRequest
 ```
+>ArticleRequestが作成される
+
+authorizeメソッド
+- フォームリクエストのauthorizeメソッドはデフォルトではfalseを返すようにしていますが、このままだとステータスコード403のHTTPレスポンスがクライアントに返されます。
+- そして、ルーティングされているコントローラーのアクションメソッドは処理がされません。
+[フォームリクエストの認可](https://readouble.com/laravel/6.x/ja/validation.html#authorizing-form-requests)
+
+rulesメソッド
+- rulesメソッドでは、バリデーションのルールを定義します。
+- 連想配列形式で、キーにパラメーターを、値にバリデーションルールを指定します。
+
+```
+return [
+        'title' => 'required|max:50',
+        'body' => 'required|max:500',
+    ];
+```
+
+[使用可能なバリデーションルール](https://readouble.com/laravel/6.x/ja/validation.html#available-validation-rules)
+
+attributesメソッド
+
+- attributesメソッドでは、バリデーションエラーメッセージに表示される項目名をカスタマイズできます。
+
+```
+public function attributes()
+{
+    return [
+        'title' => 'タイトル',
+        'body' => '本文',
+    ];
+}
+```
+
+- ここでは項目名が記載の通りの日本語で表示されるようにしています。
+
+引数の型宣言
+```
+public function store(ArticleRequest $request, Article $article)
+```
+
+- storeアクションメソッドは、第一引数が$requestとなっています。
+
+- その$requestの手前にはArticleRequestと記述されています。
+
+- これは、引数$requestはArticleRequestクラスのインスタンスである、ということを宣言しています。
+
+- 宣言することでどうなるかというと、もしstoreメソッドの第一引数に、ArticleRequestクラスのインスタンス以外のものが渡されると`TypeErrorという例外が発生して処理は中断します。`
+>ある程度のコード量になってくると、引数の型宣言はコードの可読性を高める上で非常に有用です。
+[PHPの型の種類](https://www.php.net/manual/ja/language.types.intro.php)
+[型宣言](https://www.php.net/manual/ja/functions.arguments.php#functions.arguments.type-declaration)
+
+- Laravelのコントローラーはメソッドの引数で型宣言を行うと、そのクラスのインスタンスが自動で生成されてメソッド内で使えるようになります。
+- このようにメソッドの内部で他のクラスのインスタンスを生成するのではなく、外で生成されたクラスのインスタンスをメソッドの引数として受け取る流れをDI(Dependency Injection)と言います。
+
+#### DIを使うことで、あるクラスがあるクラスへ依存している度合い、ここではArticleControllerがArticleクラスへ依存している度合いを下げ、今後の変更がしやすい、テストがしやすい設計となります。
+
+### エラー：新規記事を生成できない。
+
+```
+エラーメッセージ
+SQLSTATE[42703]: Undefined column: 7 ERROR: column "updated_at" of relation "articles"
+does not exist LINE 1: ...sert into "articles" ("title", "body", "user_id", "updated_a... ^ (SQL: insert
+ into "articles" ("title", "body", "user_id", "updated_at", "created_at") 
+ values (titel, content, 3, 2021-02-13 17:07:37, 2021-02-13 17:07:37) returning "id")
+```
+
+`updated_atカラムがないよー`
+
+- 原因：updated_atカラムがなかったことが原因
+
+```
+# 日付_create_articles_table.php
+
+    public function up()
+    {
+        Schema::create('articles', function (Blueprint $table) {
+            $table->bigIncrements('id'); これと
+            $table->string('title');
+            $table->text('body');
+            $table->bigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->timestamps(); これがなかったからupdated_atが作成されなかった
+        });
+    }
+```
+
+- 解決法：マイグレーションファイルにカラムを追加してDBロールバック⇨再度DBマイグレートを実行
+
+```
+docker-compose exec workspace php artisan migrate:rollback
+```
+```
+docker-compose exec workspace php artisan migrate
+```
+
+#### 対策：まずエラーメッセージの内容を読み解くこと。（今回の場合はupdated_atカラムがundefindになっているところに着目するべきだった）<br>その上でDBテーブルのエラーだったのでマイグレーションファイルがおかしくないか見にいく。<br>または、マイグレートが正しく実行されているか確認する。
+
