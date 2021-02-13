@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class ArticleController extends Controller //Controllerを継承している
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Article::class, 'article');
+    }
+
     public function index() //indexメソッドを定義
     {   
         $articles = Article::all()->sortByDesc('created_at');

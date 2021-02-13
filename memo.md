@@ -759,3 +759,80 @@ Route::resource('/articles', 'ArticleController')->only(['show']); //-- この�
 ```
 
 - ここでは、リソースルートにonlyメソッドとexceptメソッドを使い分けて、showアクションメソッドに対してauthミドルウェアを使わないようにしています。
+
+## 記事更新と記事削除への認可の考慮
+
+- URLを直うちすると誰でも記事を更新できてしまう状態なので、自分の記事しか更新できないようにする。
+
+ポリシーの作成
+
+```
+docker-compose exec workspace php artisan make:policy ArticlePolicy --model=Article
+```
+
+- ポリシーの作成コマンドでは--model=モデル名といったオプションを付けましたが、このようにすると指定したモデルに対応したポリシーとなり、最初からviewAnyなどのメソッドが定義された状態で作成されます。
+  
+[ポリシーの作成](https://readouble.com/laravel/6.x/ja/authorization.html#generating-policies)
+
+- ポリシーの各メソッドと、コントローラーの各アクションメソッドの対応関係は以下となります。
+
+|ポリシーのメソッド	|コントローラーのアクションメソッド|
+|:-|:-|
+|viewAny|index|
+|view|show|
+|create|create, store|
+|update|edit, update|
+|destroy|destroy|
+
+viewAny / viewメソッド
+
+- ポリシーのviewAnyメソッド、viewメソッドは、それぞれコントローラーのindexアクションメソッド、showアクションメソッドに対応します。
+
+update / deleteメソッド
+- これらは、それぞれコントローラーのedit/updateアクションメソッド、deleteアクションメソッドに対応します。
+
+```
+return $user->id === $article->user_id
+```
+- とし、ログイン中のユーザーのIDと記事モデルのユーザーIDが一致すればtrueを、不一致であればfalseを返すようにします。
+
+createメソッド
+
+- ポリシーのcreateメソッドは、コントローラーのcreate/storeアクションメソッドに対応します。
+- ポリシーのcreateメソッドでは、update/deleteメソッドと異なり、一律trueを返すようにします。
+
+- これは、記事投稿画面を表示する段階や、記事投稿処理をこれから行おうとする段階(投稿画面で投稿ボタンを押した段階)では、まだ記事モデルは作成されておらず、update/deleteメソッドのように、ユーザーIDを比較するといったことはできないためです。
+>railsでいうnew
+
+ポリシーをコントローラーで使用する
+
+- ポリシーを作成しましたが、作成しただけではコントローラーでポリシーは使用されません。
+
+__constructメソッド
+- PHPのクラスでは、__constructメソッドを定義すると、クラスのインスタンスが生成された時に初期処理として特に呼び出さなくても必ず実行されます。
+
+authorizeResourceメソッド
+- ArticleControllerのようにcreateアクションメソッドやupdatedアクションメソッドを持つリソースコントローラーであれば、コントローラーのコンストラクタでauthorizeResourceメソッドを使用できます。
+- authorizeResourceメソッドの第一引数には、モデルのクラス名を渡します。
+
+- (なお、第一引数に渡したArticle::classは'App/Article'という文字列を返すので、第一引数には直接'App/Article'を渡しても構いません)
+
+- 第二引数には、そのモデルのIDがセットされる、ルーティングのパラメータ名を渡します。
+
+[nullableな型宣言](https://www.php.net/manual/ja/migration71.new-features.php#migration71.new-features.nullable-types)
+
+```
+public function viewAny(?User $user)
+```
+
+- このように?を付けると、その引数がnullであることも許容されます。
+
+[ポリシーの登録](https://readouble.com/laravel/6.x/ja/authorization.html#registering-policies)
+
+- 本来は、ポリシーを使うには本パートでこれまで説明したこと以外に、AuthServiceProviderへ登録する必要もあります。
+
+- しかし、今回のポリシーは以下の全ての条件を満たしているため、この登録が不要となり、Laravelが自動検出してくれます。
+
+>- モデルがappディレクトリ配下にある
+>- ポリシーがapp/Policesディレクトリ配下にある
+>- ポリシー名がモデル名Policyという名前である
