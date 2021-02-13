@@ -869,5 +869,24 @@ docker-compose up -d workspace nginx php-fpm postgres mailhog
 
 Laravelの環境変数の設定
 - 次に、laravelディレクトリの.envのMAIL_から始まる環境変数の値について、以下の通り変更してください。
+
+config関数
+- config('app.url')では、config関数を使ってconfig/app.phpのurlの値を取得しています。
+```
+return [
+    // 略
+    'url' => env('APP_URL', 'http://localhost'),
+    // 略
+];
+```
+- 上記の通り、env関数を使って環境変数APP_URLの値を取得しています(第一引数のAPP_URLが存在しない場合は、第二引数の'http://localhost'がデフォルト値となります)。
+
+[url関数](https://readouble.com/laravel/6.x/ja/helpers.html#method-url)
+- url関数は、引数として渡されたパスを完全なURLに変換します。
+- どういうことかというと、サービスのURLが例えばhttp://example.comだった場合、
+- `url('xxx/yyy')は、http://example.com/xxx/yyyに変換`といったように不足する部分を補ってくれます。
+
+本番環境での環境変数APP_URLについて
+- 本番環境にデプロイする時はAPP_URLを環境変数に設定されている値を、本番環境のURLに変更する。
   
 
