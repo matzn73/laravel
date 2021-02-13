@@ -448,3 +448,90 @@ $errors変数
 レコードの削除
 - DBを立ち上げてSQLを投げるか、tinkerで対話形式で削除することができる。
 >tinkerはrails consoleのイメージ
+```
+
+```
+
+[クラスがないって言われた時の処理](https://nextat.co.jp/staff/archives/121)
+
+#### ログイン画面の作成
+- ログアウトと同じように`AuthenticateUsersトレイト`の中でloginアクションメソッドが定義されている。
+
+loginアクションメソッド
+
+```
+$this->validateLogin($request);
+```
+- 簡易的なバリデーションをかけている
+
+```
+   protected function validateLogin(Request $request)
+    {
+        $request->validate([
+            $this->username() => 'required|string',
+            'password' => 'required|string',
+        ]);
+    }
+```
+
+> ユーザー名とパスワードどちらも必須で文字列で入力するようバリデーション
+- Laravelではユーザーに対してログイン時に入力させるID情報とパスワードのうち、ID情報をカスタマイズできるようになっています。
+- 標準ではemailですが、email以外にしたければLoginControllerでusernameメソッドを`オーバーライド`すれば良いということです。
+
+hasTooManyLoginAttempts
+- ユーザーがログインを試して失敗した回数が定められた上限に達しているかを調べ、上限を越えるとtrueを返します。
+- Laravelのデフォルトの設定では、1分間に5回のログイン失敗が上限となります。
+- この設定変更方法は同じThrottlesLoginsトレイトを見るとわかります。
+- もし、このデフォルト値をカスタマイズしたい場合は、LoginControllerに以下のようにmaxAttemptsプロパティ、decayMinutesプロパティを追加すれば良いことになります。
+
+```
+class LoginController extends Controller
+{
+    // 略
+    use AuthenticatesUsers;
+
+    protected $maxAttempts = 5;
+    protected $decayMinutes = 1;
+    // 略
+}
+```
+
+キャッシュについて
+- ログイン試行回数はLaravelのキャッシュで管理されています。
+- キャッシュの保存先の設定はconfigディレクトリのcache.phpにあります。
+- 本格的なWebサービスであればキャッシュの保存先はファイルではなく、より高速に読み書きできるメモリとすることが多いです。
+
+remember meトークン
+```
+<input type="hidden" name="remember" id="remember" value="on">
+```
+
+- 上記のinputタグは、次回から自動でログインするという説明がされたチェックボックスに相当するものとなる
+- ただし、本教材のWebサービスではtype属性をcheckboxではなくhiddenとすることでユーザーが直接操作できない隠し項目とし、value属性をonとすることで常にチェックが入ったのと同じ状態にしています。
+- この結果どうなるかというと、ユーザーがログインした後はログアウト操作を行わない限り、そのブラウザではログイン状態が維持されます。
+- 最初のログイン成功後にブラウザにはremember_web_...という名前のCookieが保存され、Laravelではこれがあれば2回目からのログインを不要にしています。
+
+ログイン失敗時のメッセージについて
+- もし、メールアドレスとパスワードの出し分けを行っていた場合、適当なメールアドレスや他人のメールアドレスでログインしようとして、パスワードが間違っています、と表示されると、
+そのメールアドレスはこのWebサービスにユーザー登録はされており、あとはパスワードさえわかればログインできること
+その適当なメールアドレスは誰かの実在するメールアドレスと考えられること
+そのメールアドレスの保有者がこのWebサービスを利用していること
+などがわかってしまい、悪意のあるユーザーに余計な情報を与えることになります。
+
+
+- ログイン失敗時のメッセージを詳細に出し分けると、このようなデメリットもあるということを知識として覚えておいてください。
+
+## 記事投稿機能の作成
+
+リソースルートの追加
+
+- よく使われる機能のルーティングをひとまとめにしたメソッドがLaravelでは用意されています。
+
+```
+Route::resource('/リソース名', 'コントローラー名'); 
+```
+
+```
+ex) Route::resource('/articles', 'ArticleController');
+```
+
