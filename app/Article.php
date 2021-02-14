@@ -30,4 +30,9 @@ class Article extends Model
             ? (bool)$this->likes->where('id', $user->id)->count()
             : false;
     }
+
+    public function getCountLikesAttribute(): int //アクセサ。
+    {
+        return $this->likes->count(); //記事にいいねしたユーザー全てが返る
+    }
 }

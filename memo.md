@@ -1121,6 +1121,7 @@ $this->likes->where('id', $user->id)->count()
 
 ### Vueコンポーネントの編集
 
-
+- アクセサについて
+articlesテーブルにはcount_likesというカラムはありませんが、まるてそうしたカラムがあるかのように$article->count_likesといった呼び出し方ができるのがアクセサの特徴です。
 
 
