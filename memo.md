@@ -1052,3 +1052,75 @@ docker-compose exec workspace php artisan make:migration create_likes_table --cr
 docker-compose exec workspace php artisan migrate
 ```
 
+記事モデルにリレーションを追加する
+```
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+//==========ここから追加==========
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+//==========ここまで追加==========
+
+class Article extends Model
+{
+    // 略
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo('App\User');
+    }
+
+    //==========ここから追加==========
+    public function likes(): BelongsToMany
+    {
+        return $this->belongsToMany('App\User', 'likes')->withTimestamps();
+    }
+    //==========ここまで追加==========
+}
+```
+[リレーション](https://readouble.com/laravel/6.x/ja/eloquent-relationships.html)
+
+[中間テーブル](https://readouble.com/laravel/6.x/ja/eloquent-relationships.html#many-to-many)
+
+### いいね済みかどうかを判定するメソッドを作成する
+```
+public function isLikedBy(?User $user): bool
+    {
+        return $user
+            ? (bool)$this->likes->where('id', $user->id)->count()
+            : false;
+    }
+```
+このnullableな型宣言が使用できます。
+
+- countメソッド
+
+countメソッドは、コレクションの要素数を数えて、数値を返します。
+```
+$this->likes->where('id', $user->id)->count()
+```
+結果は、
+
+- この記事をいいねしたユーザーの中に、引数として渡された$userがいれば、1かそれより大きい数値が返る
+
+- この記事をいいねしたユーザーの中に、引数として渡された$userがいなければ、0が返る
+
+### 型キャスト
+(bool)と記述することで変数を論理値、つまりtrueかfalseに変換します。
+
+### v-bindの使用
+
+```
+<article-like
+        :initial-is-liked-by='@json($article->isLikedBy(Auth::user()))'      
+      >
+```
+@jsonを使うことで、$article->isLikedBy(Auth::user())の結果を値ではなく文字列としてVueコンポーネントに渡しています。
+
+### Vueコンポーネントの編集
+
+
+
+
