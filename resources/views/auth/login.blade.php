@@ -1,6 +1,6 @@
 @extends('app')
 
-@section('title', 'ログイン')
+@section('title', 'ログイン'){{--ka;djaf;jsd;asdfa;--}}
 
 @section('content')
   <div class="container">
@@ -19,7 +19,7 @@
 
                 <div class="md-form">
                   <label for="email">メールアドレス</label>
-                  <input class="form-control" type="text" id="email" name="email" required value="{{ old('email') }}">
+                  <input class="form-control" type="text" id="email" name="email" required value="{{ old('email') }}"> {{--ka;djaf;jsd;asdfa;--}}
                 </div>
 
                 <div class="md-form">

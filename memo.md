@@ -889,4 +889,34 @@ return [
 本番環境での環境変数APP_URLについて
 - 本番環境にデプロイする時はAPP_URLを環境変数に設定されている値を、本番環境のURLに変更する。
   
+コンストラクタインジェクション
+- クラスのインスタンスをコンストラクタにて注入(DI)することを、コンストラクタインジェクションと呼びます。
+```
+public $token;
+public $mail;
+```
+```
+public function __construct(string $token, BareMail $mail) //-- この行を変更
+{
+    $this->token = $token;
+    $this->mail = $mail;
+}
+```
+
+#### 環境変数はむやみやたらと変更しない
+
+メールアドレスをクエリ文字列でURLに渡す
+```
+http://localhost/password/reset/(トークン)?email=(メールアドレス)
+```
+```
+'count' => config(
+    'auth.passwords.' .
+    config('auth.defaults.passwords') .
+    '.expire'
+),
+```
+- キーcountの値には、パスワード設定画面へのURLの有効期限(単位は分)がセットされます。
+
+
 
