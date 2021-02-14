@@ -1040,3 +1040,15 @@ JavaScriptの編集・保存の都度、手動でトランスパイルする必�
 ```
 docker-compose exec workspace php artisan make:migration create_likes_table --create=likes
 ```
+
+マイグレーションファイルの変更
+
+`onDelete('cascade')`を付けることで、
+いいねをしたユーザーがusersテーブルから削除された場合には、likesテーブルから、そのユーザーに紐づくレコードが削除される
+>dependent: :destroyみたいなやつ
+
+マイグレーションの実行
+```
+docker-compose exec workspace php artisan migrate
+```
+
