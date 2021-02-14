@@ -918,5 +918,11 @@ http://localhost/password/reset/(トークン)?email=(メールアドレス)
 ```
 - キーcountの値には、パスワード設定画面へのURLの有効期限(単位は分)がセットされます。
 
+いいね機能をvueで作る
 
-
+Vue.jsをインストールする
+- package.jsonを修正
+>package.jsonはコメントを加えるとエラーになるのでコメントは入れない
+```
+docker-compose exec workspace npm install
+```
