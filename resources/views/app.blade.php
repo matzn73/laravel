@@ -15,9 +15,11 @@
 </head>
 
 <body>
+  <div id="app">
+    @yield('content')
+  </div>
 
-  @yield('content')
-
+  <script src="{{ mix('js/app.js') }}"></script> {{--resources/js/app.jsに定義したVueコンポーネントを各Bladeで使用できるようになる--}}
   <!-- JQuery -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <!-- Bootstrap tooltips -->

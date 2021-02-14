@@ -919,10 +919,124 @@ http://localhost/password/reset/(トークン)?email=(メールアドレス)
 - キーcountの値には、パスワード設定画面へのURLの有効期限(単位は分)がセットされます。
 
 いいね機能をvueで作る
+>vueをインストール、vueコンポーネント作成、app.js編集、gitnore編集、トランスパイルを実行、
 
 Vue.jsをインストールする
 - package.jsonを修正
 >package.jsonはコメントを加えるとエラーになるのでコメントは入れない
 ```
 docker-compose exec workspace npm install
+```
+
+app.jsの編集
+```
+import './bootstrap'
+import Vue from 'vue'
+import ArticleLike from './components/ArticleLike'
+
+const app = new Vue({
+  el: '#app',
+  components: {
+    ArticleLike,
+  }
+})
+```
+- resources/js/app.jsは、Laravelの全画面で共通的に使用することを想定したJavaScriptです。
+
+- Laravel Mixについて
+>- JavaScriptを各ブラウザで動かせる形式にトランスパイル(変換)する仕組み
+>- mix.js('resources/js/app.js', 'public/js')と記述されていますが、これにより
+>- `resources/js/app.js`がトランスパイルされて、トランスパイル後のファイルが`public/jsディレクトリ`に、同じapp.jsというファイル名で保存されます。
+>- ブラウザに実際に読み込ませて使うJavaScriptは、`public/js/app.js`の方になるということを覚えておいてください。
+>[アセットコンパイル](https://readouble.com/laravel/6.x/ja/mix.html)
+
+トランスパイルを実行
+```
+
+
+
+ERROR Failed to compile with x errorsと表示されればトランスパイルは失敗です。
+
+ここまでのJavaScriptの編集内容に誤りがあるので、見直してください。
+
+例えば、以下はresources/js/app.jsで、el: '#app'の最後にカンマが無いことでトランスパイルエラーとなった例です。
+
+```
+ ERROR  Failed to compile with 1 errors                                                                                          3:09:13 AM
+
+ error  in ./resources/js/app.js
+
+Syntax Error: SyntaxError: /var/www/resources/js/app.js: Unexpected token, expected "," (7:2)
+
+   5 | const app = new Vue({
+   6 |   el: '#app'
+>  7 |   components: {
+     |   ^
+   8 |     ArticleLike,
+   9 |   }
+  10 | })
+
+
+ @ multi ./resources/js/app.js ./resources/sass/app.scss
+
+       Asset      Size   Chunks             Chunk Names
+/css/app.css   0 bytes  /js/app  [emitted]  /js/app
+  /js/app.js  8.31 KiB  /js/app  [emitted]  /js/app
+
+ERROR in ./resources/js/app.js
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /var/www/resources/js/app.js: Unexpected token, expected "," (7:2)
+
+   5 | const app = new Vue({
+   6 |   el: '#app'
+>  7 |   components: {
+     |   ^
+   8 |     ArticleLike,
+   9 |   }
+  10 | })
+
+yntaxError: /var/www/resources/js/app.js: Unexpected token, expected "," (7:2)という部分を見ると、
+
+問題が起きているファイルが、resources/js/app.jsであること
+
+Unexpected token, expected ","という文から、,があるはずの箇所にそうでない文字があったこと
+
+(7:2)から、その場所は7行目の2バイト目であること(その手前である6行目の最終バイトを修正すれば良い)
+
+が分かります。
+
+こうした情報を元に、修正箇所と内容を推測するようにしてください。
+
+- npm run watch-pollについて
+
+先ほどのJavaScriptのトランスパイルでは、npm run watch-pollというコマンドを実行しました。
+
+npm run watch-pollは、Laravelをインストールした際に初めから存在するpackage.json内に定義されているコマンドのひとつです。
+
+このコマンドは、各JavaScriptファイルを常に監視し、編集されたJavaScriptが保存されると自動的にLaravel Mixによるトランスパイルを行います。
+
+JavaScriptの編集・保存の都度、手動でトランスパイルする必要が無くなり、開発を効率化します。
+
+なお、npm run watch-pollを起動中のターミナルでは他のことはできませんので、何か他のコマンドを実行したい場合は別のターミナル画面を使うようにしてください。
+
+また、npm run watch-pollを終了させる場合はcontrol + cを押してください。
+>rails serverのように違うタブで常に立ち上げておく
+
+- mix関数について
+```
+<script src="{{ mix('js/app.js') }}"></script> {{--この行を追加--}}
+```
+/js/app.jsとありますが、これはlaravel/public/js/app.jsのことになります。
+
+また、その後ろに?id=dadc3a844ded5d18d741といったようにidパラメーターがありますが、これは最新のJavaScriptをブラウザに読み込ませるための工夫です。
+
+例えば、サーバー側に新機能を盛り込んだ新しいJavaScriptを配置したとしても、ブラウザのキャッシュに以前に読み込んだそのサーバーのJavaScriptがキャッシュとして残っていると、ブラウザはキャッシュにある古いJavaScriptの方を使ってしまいます。
+そこで、Laravel Mixでは、JavaScriptのトランスパイルの都度、idを採番します。
+採番されたidは、publicディレクトリのmix-manifest.jsonというファイルを見ると分かります。
+
+[テンプレート内でのコンポーネント名の形式 - Vue.js スタイルガイド](https://jp.vuejs.org/v2/style-guide/index.html#%E3%83%86%E3%83%B3%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E5%86%85%E3%81%A7%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%9D%E3%83%BC%E3%83%8D%E3%83%B3%E3%83%88%E5%90%8D%E3%81%AE%E5%BD%A2%E5%BC%8F-%E5%BC%B7%E3%81%8F%E6%8E%A8%E5%A5%A8)
+
+- いいねテーブル作成
+```
+docker-compose exec workspace php artisan make:migration create_likes_table --create=likes
 ```
