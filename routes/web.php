@@ -4,9 +4,14 @@ Auth::routes();
 Route::get('/', 'ArticleController@index')->name('articles.index'); 
 Route::resource('/articles', 'ArticleController')->except(['index', 'show'])->middleware('auth'); 
 Route::resource('/articles', 'ArticleController')->only(['show']);
-//いいね機能のルーティング
+//いいね
 Route::prefix('articles')->name('articles.')->group(function () {
   Route::put('/{article}/like', 'ArticleController@like')->name('like')->middleware('auth');
   Route::delete('/{article}/like', 'ArticleController@unlike')->name('unlike')->middleware('auth');
 });
+//タグ
 Route::get('/tags/{name}', 'TagController@show')->name('tags.show');
+//ユーザー関連
+Route::prefix('users')->name('users.')->group(function () {
+  Route::get('/{name}', 'UserController@show')->name('show');
+});
