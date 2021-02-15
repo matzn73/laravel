@@ -53,6 +53,11 @@ class ArticleController extends Controller //Controllerを継承している
     public function update(ArticleRequest $request, Article $article)
     {
         $article->fill($request->all())->save();
+        $article->tags()->detach(); //全削除した上で
+        $request->tags->each(function ($tagName) use ($article) { //eachで回して再度タグをテーブルに登録する
+            $tag = Tag::firstOrCreate(['name' => $tagName]);
+            $article->tags()->attach($tag);
+        });
         return redirect()->route('articles.index');
     }
 
