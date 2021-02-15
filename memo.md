@@ -1162,3 +1162,8 @@ endpoint="{{ route('articles.like', ['article' => $article]) }}"
 ```
 Authファサードのcheckメソッドを使うと、ユーザーがログイン中かどうかを論理値で返します。
 
+vueの流れ
+- package.json書く
+- npm install する
+- コンポーネントファイル作成する
+- コンポーネントをbladeに埋め込む
