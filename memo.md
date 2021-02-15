@@ -1124,4 +1124,41 @@ $this->likes->where('id', $user->id)->count()
 - アクセサについて
 articlesテーブルにはcount_likesというカラムはありませんが、まるてそうしたカラムがあるかのように$article->count_likesといった呼び出し方ができるのがアクセサの特徴です。
 
+- groupメソッドの利用
+
+groupメソッドを使うことで、それまでに定義した内容が、groupメソッドにクロージャ(無名関数)として渡した各ルーティングにまとめて適用されます。
+
+```
+Route::put('articles/{article}/like', 'ArticleController@like')->name('articles.like')->middleware('auth');
+Route::delete('articles/{article}/like', 'ArticleController@unlike')->name('articles.unlike')->middleware('auth');
+```
+
+```
+Route::put('/{article}/like', 'ArticleController@like')->name('like')->middleware('auth');
+Route::delete('/{article}/like', 'ArticleController@unlike')->name('unlike')->middleware('auth');
+```
+といったように、URLやnameの部分を簡潔に記述することが可能となっています。
+
+- attachメソッドとdetachメソッド
+$article->likes()->attach($request->user()->id)とすることで、この記事モデルと、リクエストを送信したユーザーのユーザーモデルの両者を紐づけるlikesテーブルのレコードが新規登録されます。
+
+detachメソッドであれば、逆に削除されます。
+
+なぜ、必ず削除(detach)してから新規登録(attach)しているかというと、1人のユーザーが同一記事に複数回重ねていいねを付けられないようにするための考慮です。
+
+```
+public function like(Request $request, Article $article)
+{
+    $article->likes()->detach($request->user()->id);
+    $article->likes()->attach($request->user()->id);
+```
+
+`Laravelでは、コントローラーのアクションメソッドで配列や連想配列を返すと、JSON形式に変換されてレスポンスされます。`
+
+### VueからLaravelに非同期通信する
+```
+:authorized='@json(Auth::check())'
+endpoint="{{ route('articles.like', ['article' => $article]) }}"
+```
+Authファサードのcheckメソッドを使うと、ユーザーがログイン中かどうかを論理値で返します。
 
