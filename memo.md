@@ -1166,4 +1166,53 @@ vueの流れ
 - package.json書く
 - npm install する
 - コンポーネントファイル作成する
-- コンポーネントをbladeに埋め込む
+- app.jsにimportする
+- laravel mix を起動しているターミナル を確認すると、compiledになっている！
+- bladeにコンポーネントを埋め込む
+- `一応これで実装完了`
+
+### 入力されたタグをBladeからPOST送信可能にする
+タグ情報がinputタグではなく、spanタグ内にあるということは、HTMLのformタグを使ってタグ情報をPOST送信することができません。
+
+そこで、ArticleTagsInputコンポーネント内にtype属性がhiddenである隠しinputタグを別途作り、そこにタグ情報を持たせることにします。
+
+```
+<input
+      type="hidden"
+      name="tags"
+      :value="tagsJson"
+    >
+```
+
+### タグ関連のテーブルを作成する
+
+```
+docker-compose exec workspace php artisan make:migration create_tags_table --create=tags
+```
+
+```
+$table->string('name')->unique();
+```
+tagのnameカラムを追加する。unique制約をつける
+
+また、Laravelではuniqueメソッドを使うと、そのカラムのインデックスが作られます。
+
+インデックスが作られることで、そのカラムを条件として使った検索処理が高速になることがあります。
+[インデックス作成](https://readouble.com/laravel/6.x/ja/migrations.html#creating-indexes)
+
+- 記事とタグの中間テーブルのマイグレーションファイルの作成
+  
+```
+docker-compose exec workspace php artisan make:migration create_article_tag_table --create=article_tag
+```
+
+```
+ docker-compose exec workspace php artisan migrate
+```
+
+- タグモデルの作成
+
+```
+docker-compose exec workspace php artisan make:model Tag
+```
+
