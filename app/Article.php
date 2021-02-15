@@ -36,6 +36,11 @@ class Article extends Model
         return $this->likes->count(); //記事にいいねしたユーザー全てが返る
     }
 
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany('App\Tag')->withTimestamps();
+    }
+
     public function like(Request $request, Article $article)
     {
         $article->likes()->detach($request->user()->id);

@@ -1216,3 +1216,15 @@ docker-compose exec workspace php artisan make:migration create_article_tag_tabl
 docker-compose exec workspace php artisan make:model Tag
 ```
 
+- バリデーションルールの追加
+
+- firstOrCreate
+
+```
+$tag = Tag::firstOrCreate(['name' => $tagName]);
+```
+
+firstOrCreateメソッドは、引数として渡した「カラム名と値のペア」を持つレコードがテーブルに存在するかどうかを探し、もし存在すればそのモデルを返します。
+
+テーブルに存在しなければ、そのレコードをテーブルに保存した上で、モデルを返します。
+

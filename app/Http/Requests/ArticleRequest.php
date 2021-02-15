@@ -27,6 +27,7 @@ class ArticleRequest extends FormRequest
         return [
             'title' => ['required', 'max:50'],
             'body' => ['required', 'max:500'],
+            'tags' => 'json|regex:/^(?!.*\s).+$/u|regex:/^(?!.*\/).*$/u',
         ];
     }
 
@@ -35,6 +36,16 @@ class ArticleRequest extends FormRequest
         return [
             'title' => 'タイトル',
             'body' => '本文',
+            'tags' => 'タグ',
         ];
+    }
+
+    public function passedValidation() //バリデーションに成功後の処理
+    {
+        $this->tags = collect(json_decode($this->tags))
+            ->slice(0, 5) //タグの数を指定
+            ->map(function ($requestTag) { //新しい配列をmapで作成
+                return $requestTag->text;
+            });
     }
 }
