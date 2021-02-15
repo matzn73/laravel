@@ -41,7 +41,13 @@ class ArticleController extends Controller //Controllerを継承している
 
     public function edit(Article $article)
     {
-        return view('articles.edit', ['article' => $article]);
+        $tagNames = $article->tags->map(function ($tag) {
+            return ['text' => $tag->name]; //textというキーがついている必要がある
+        });
+        return view('articles.edit', [
+            'article' => $article,
+            'tagNames' => $tagNames,
+        ]);
     }
 
     public function update(ArticleRequest $request, Article $article)
