@@ -14,6 +14,7 @@
           @if( Auth::id() !== $user->id ) {{--自分と他のユーザーで条件分岐--}}
             <follow-button
               class="ml-auto"
+              :initial-is-followed-by='@json($user->isFollowedBy(Auth::user()))'
             >
             </follow-button>
           @endif
