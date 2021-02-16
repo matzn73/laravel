@@ -10,9 +10,11 @@ class UserController extends Controller
     public function show(string $name) //ルーティングで定義したnameを受け取る
     {
         $user = User::where('name', $name)->first();
+        $articles = $user->articles->sortByDesc('created_at');
 
         return view('users.show', [
             'user' => $user,
+            'articles' => $articles,
         ]);
     }
 
