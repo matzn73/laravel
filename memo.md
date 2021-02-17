@@ -1229,3 +1229,6 @@ firstOrCreateメソッドは、引数として渡した「カラム名と値の�
 テーブルに存在しなければ、そのレコードをテーブルに保存した上で、モデルを返します。
 
 ## [URIのグループ化](https://readouble.com/laravel/6.x/ja/routing.html#route-groups)
+
+## N+1問題
+[遅延Eagerロード](https://readouble.com/laravel/6.x/ja/eloquent-relationships.html#lazy-eager-loading)

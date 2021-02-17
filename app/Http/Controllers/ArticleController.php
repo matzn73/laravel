@@ -16,7 +16,8 @@ class ArticleController extends Controller //Controllerを継承している
 
     public function index() //indexメソッドを定義
     {   
-        $articles = Article::all()->sortByDesc('created_at');
+        $articles = Article::all()->sortByDesc('created_at')
+            ->load(['user', 'likes', 'tags']);
 
         return view('articles.index', compact('articles')); //viewを返す
                                         //ここでarticlesを連組配列で定義することでviewファイルで$articlesが使える
