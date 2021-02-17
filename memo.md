@@ -1232,3 +1232,5 @@ firstOrCreateメソッドは、引数として渡した「カラム名と値の�
 
 ## N+1問題
 [遅延Eagerロード](https://readouble.com/laravel/6.x/ja/eloquent-relationships.html#lazy-eager-loading)
+
+- APP_KEYはLaravelでの各種の暗号化などに関わる値であるので、開発環境と、Herokuのような本番環境では異なる値を設定するのが一般的です。
